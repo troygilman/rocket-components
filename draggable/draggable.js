@@ -24,7 +24,7 @@ rocket("sb-draggable-root", {
 });
 
 rocket("sb-draggable-container", {
-    setup: ({ $$, action, effect, adoptStyles, host }) => {
+    setup: ({ $$, action, effect, adoptStyles, host, emit }) => {
         $$.dragging = false;
         $$.originalX = 0;
         $$.originalY = 0;
@@ -47,9 +47,14 @@ rocket("sb-draggable-container", {
             if ($$.dragging) {
                 $$.offsetX = x - $$.originalX;
                 $$.offsetY = y - $$.originalY;
-                console.log("mousemove", $$.offsetX, $$.offsetY);
+                emit("dragged", {id: host.id, x: x, y: y})
             }
         });
+        action("dragged", (_, { id, x, y }) => {
+            if (host.id !== id) {
+                console.log("dragged", id, x, y)
+            }
+        })
         effect(() => {
             $$.translate = `${$$.offsetX}px ${$$.offsetY}px`;
         });
@@ -61,6 +66,7 @@ rocket("sb-draggable-container", {
             data-on:grabbed="@grabbed(evt.detail)"
             data-on:released="@released()"
             data-on:mousemove__window="@mousemove({x: evt.clientX, y: evt.clientY})"
+            data-on:dragged__window="@dragged(evt.detail)"
             data-style:translate="$$translate"
         >
             <slot></slot>
@@ -71,7 +77,8 @@ rocket("sb-draggable-container", {
 rocket("sb-draggable-trigger", {
     setup: ({ $$, action, emit, host, adoptStyles }) => {
         $$.grabbed = false;
-        action("mousedown", (_, { x, y }) => {
+        action("mousedown", ({ evt }, { x, y }) => {
+            evt.preventDefault();
             $$.grabbed = true;
             emit("grabbed", { x: x, y: y });
         });
