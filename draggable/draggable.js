@@ -6,7 +6,6 @@ const styles = /* css */ `
     width: fit-content;
     height: fit-content;
     transition: box-shadow 0.3s ease;
-    view-transition-class: slide;
 }
 .sb-draggable-container-targetted {
     box-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
@@ -79,7 +78,7 @@ rocket("sb-draggable-container", {
         <div
             id="sb-draggable-container-${host.id}"
             class="sb-draggable-container"
-            style="view-transition-name: drag-${host.id}"
+            part="container"
             data-on:grabbed="@grabbed(evt.detail)"
             data-on:released__viewtransition="@released(evt.detail)"
             data-on:mousemove__window="@mousemove({x: evt.clientX, y: evt.clientY})"
