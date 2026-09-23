@@ -1,5 +1,16 @@
 import { rocket } from "datastar";
 
+const styles = /* css */ `
+.sb-draggable-container {
+    border: 1px solid black;
+    width: fit-content;
+    height: fit-content;
+}
+.sb-draggable-trigger {
+    cursor: pointer;
+}
+`;
+
 rocket("sb-draggable-root", {
     props: ({ string }) => ({}),
     setup: ({ $$, action, emit }) => {
@@ -13,7 +24,7 @@ rocket("sb-draggable-root", {
 });
 
 rocket("sb-draggable-container", {
-    setup: ({ $$, action, effect }) => {
+    setup: ({ $$, action, effect, adoptStyles, host }) => {
         $$.dragging = false;
         $$.originalX = 0;
         $$.originalY = 0;
@@ -24,44 +35,45 @@ rocket("sb-draggable-container", {
             $$.dragging = true;
             $$.originalX = x;
             $$.originalY = y;
-            console.log("grabbed", $$.originalX, $$.originalY)
-        })
+            console.log("grabbed", $$.originalX, $$.originalY);
+        });
         action("released", () => {
             $$.dragging = false;
             $$.offsetX = 0;
             $$.offsetY = 0;
-            console.log("released")
-        })
-        action("mousemove", (_, {x, y}) => {
+            console.log("released");
+        });
+        action("mousemove", (_, { x, y }) => {
             if ($$.dragging) {
                 $$.offsetX = x - $$.originalX;
                 $$.offsetY = y - $$.originalY;
-                console.log("mousemove", $$.offsetX, $$.offsetY)
+                console.log("mousemove", $$.offsetX, $$.offsetY);
             }
-        })
+        });
         effect(() => {
-            $$.translate = `${$$.offsetX}px ${$$.offsetY}px`
-        })
+            $$.translate = `${$$.offsetX}px ${$$.offsetY}px`;
+        });
+        adoptStyles(host, styles)
     },
     render: ({ html, props: {} }) => html`
         <div
+            class="sb-draggable-container"
             data-on:grabbed="@grabbed(evt.detail)"
             data-on:released="@released()"
             data-on:mousemove__window="@mousemove({x: evt.clientX, y: evt.clientY})"
             data-style:translate="$$translate"
         >
-            <div data-text="$$translate"></div>
             <slot></slot>
         </div>
     `,
 });
 
 rocket("sb-draggable-trigger", {
-    setup: ({ $$, action, emit }) => {
+    setup: ({ $$, action, emit, host, adoptStyles }) => {
         $$.grabbed = false;
         action("mousedown", (_, { x, y }) => {
             $$.grabbed = true;
-            emit("grabbed", {x: x, y: y});
+            emit("grabbed", { x: x, y: y });
         });
         action("mouseup", () => {
             if ($$.grabbed) {
@@ -69,9 +81,11 @@ rocket("sb-draggable-trigger", {
                 emit("released");
             }
         });
+        adoptStyles(host, styles);
     },
     render: ({ html, props: {} }) => html`
         <div
+            class="sb-draggable-trigger"
             data-on:mousedown="@mousedown({x: evt.clientX, y: evt.clientY})"
             data-on:mouseup__window="@mouseup()"
         >
