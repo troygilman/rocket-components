@@ -11,6 +11,17 @@
         <script type="module" src="./draggable.js"></script>
     </head>
     <body>
+        <style>
+            ::view-transition-old(.slide),
+            ::view-transition-new(.slide) {
+                animation: none;
+                mix-blend-mode: normal;
+            }
+            ::view-transition-group(.slide) {
+                animation-duration: 280ms;
+                animation-timing-function: ease;
+            }
+        </style>
         <sb-draggable-root>
             <sb-draggable-container id="drag-container-1">
                 <sb-draggable-trigger>Drag me</sb-draggable-trigger>

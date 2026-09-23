@@ -6,6 +6,7 @@ const styles = /* css */ `
     width: fit-content;
     height: fit-content;
     transition: box-shadow 0.3s ease;
+    view-transition-class: slide;
 }
 .sb-draggable-container-targetted {
     box-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
@@ -28,8 +29,8 @@ rocket("sb-draggable-root", {
 });
 
 function isPointInElement(el, x, y) {
-  const r = el.getBoundingClientRect();
-  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    const r = el.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
 
 rocket("sb-draggable-container", {
@@ -47,19 +48,18 @@ rocket("sb-draggable-container", {
             $$.originalY = y;
             console.log("grabbed", $$.originalX, $$.originalY);
         });
-        action("released", ({ el }, {x, y}) => {
+        action("released", ({ el }, { x, y }) => {
             $$.dragging = false;
             $$.offsetX = 0;
             $$.offsetY = 0;
-            emit("dragged", {id: el.id, x: x, y: y, released: true})
+            emit("dragged", { id: el.id, x: x, y: y, released: true });
             console.log("released");
-
         });
         action("mousemove", ({ el }, { x, y }) => {
             if ($$.dragging) {
                 $$.offsetX = x - $$.originalX;
                 $$.offsetY = y - $$.originalY;
-                emit("dragged", {id: el.id, x: x, y: y, released: false})
+                emit("dragged", { id: el.id, x: x, y: y, released: false });
             }
         });
         action("dragged", ({ el }, { id, x, y, released }) => {
@@ -69,17 +69,19 @@ rocket("sb-draggable-container", {
             } else {
                 $$.targetted = false;
             }
-        })
+        });
         effect(() => {
             $$.translate = `${$$.offsetX}px ${$$.offsetY}px`;
         });
-        adoptStyles(host, styles)
+        adoptStyles(host, styles);
     },
     render: ({ html, host }) => html`
-        <div id="sb-draggable-container-${host.id}"
+        <div
+            id="sb-draggable-container-${host.id}"
             class="sb-draggable-container"
+            style="view-transition-name: drag-${host.id}"
             data-on:grabbed="@grabbed(evt.detail)"
-            data-on:released="@released(evt.detail)"
+            data-on:released__viewtransition="@released(evt.detail)"
             data-on:mousemove__window="@mousemove({x: evt.clientX, y: evt.clientY})"
             data-on:dragged__window="@dragged(evt.detail)"
             data-style:translate="$$translate"
@@ -98,10 +100,10 @@ rocket("sb-draggable-trigger", {
             $$.grabbed = true;
             emit("grabbed", { x: x, y: y });
         });
-        action("mouseup", (_, {x, y}) => {
+        action("mouseup", (_, { x, y }) => {
             if ($$.grabbed) {
                 $$.grabbed = false;
-                emit("released", {x: x, y: y});
+                emit("released", { x: x, y: y });
             }
         });
         adoptStyles(host, styles);
