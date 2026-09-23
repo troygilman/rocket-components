@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+    <head>
+        <script type="importmap">
+            {
+                "imports": {
+                    "datastar": "../vendor/datastar-rocket.js"
+                }
+            }
+        </script>
+        <script type="module" src="./draggable.js"></script>
+    </head>
+    <body>
+        <sb-draggable-root>
+            <sb-draggable-container>
+                <sb-draggable-trigger>Drag me</sb-draggable-trigger>
+                <div>Hello</div>
+            </sb-draggable-container>
+            <sb-draggable-container>
+                <sb-draggable-trigger>Drag me</sb-draggable-trigger>
+                <div>World</div>
+            </sb-draggable-container>
+        </sb-draggable-root>
+    </body>
+</html>
