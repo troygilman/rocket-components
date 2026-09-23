@@ -15,18 +15,6 @@ const styles = /* css */ `
 }
 `;
 
-rocket("sb-draggable-root", {
-    props: ({ string }) => ({}),
-    setup: ({ $$, action, emit }) => {
-        action("grab", () => {});
-    },
-    render: ({ html, props: {} }) => html`
-        <div>
-            <slot></slot>
-        </div>
-    `,
-});
-
 function isPointInElement(el, x, y) {
     const r = el.getBoundingClientRect();
     return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
@@ -36,6 +24,7 @@ rocket("sb-draggable-container", {
     setup: ({ $$, action, effect, adoptStyles, host, emit }) => {
         $$.dragging = false;
         $$.targetted = false;
+        $$.targetId = null;
         $$.originalX = 0;
         $$.originalY = 0;
         $$.offsetX = 0;
@@ -45,14 +34,17 @@ rocket("sb-draggable-container", {
             $$.dragging = true;
             $$.originalX = x;
             $$.originalY = y;
-            console.log("grabbed", $$.originalX, $$.originalY);
+            // console.log("grabbed", $$.originalX, $$.originalY);
         });
         action("released", ({ el }, { x, y }) => {
             $$.dragging = false;
-            $$.offsetX = 0;
-            $$.offsetY = 0;
-            emit("dragged", { id: el.id, x: x, y: y, released: true });
-            console.log("released");
+            if ($$.targetId) {
+                emit("swap", {id: host.id, target: $$.targetId})
+            } else {
+                $$.offsetX = 0;
+                $$.offsetY = 0;
+            }
+            // console.log("released");
         });
         action("mousemove", ({ el }, { x, y }) => {
             if ($$.dragging) {
@@ -62,13 +54,22 @@ rocket("sb-draggable-container", {
             }
         });
         action("dragged", ({ el }, { id, x, y, released }) => {
-            if (el.id !== id && isPointInElement(el, x, y) && !released) {
-                console.log("hover", el.id, x, y);
-                $$.targetted = true;
-            } else {
-                $$.targetted = false;
+            if (el.id !== id && isPointInElement(el, x, y)) {
+                // console.log("hover", el.id, x, y);
+                if (released) {
+                } else {
+                    $$.targetted = true;
+                    emit("targetted", {id: host.id})
+                }
+                return
+            } else if ($$.targetted) {
+                emit("targetted", {id: null})
             }
+            $$.targetted = false;
         });
+        action("targetted", (_, { id }) => {
+            $$.targetId = id;
+        })
         effect(() => {
             $$.translate = `${$$.offsetX}px ${$$.offsetY}px`;
         });
@@ -83,6 +84,7 @@ rocket("sb-draggable-container", {
             data-on:released__viewtransition="@released(evt.detail)"
             data-on:mousemove__window="@mousemove({x: evt.clientX, y: evt.clientY})"
             data-on:dragged__window="@dragged(evt.detail)"
+            data-on:targetted__window="@targetted(evt.detail)"
             data-style:translate="$$translate"
             data-class:sb-draggable-container-targetted="$$targetted"
         >
