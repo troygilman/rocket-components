@@ -28,19 +28,18 @@
                 animation-timing-function: ease;
             }
         </style>
-        <div data-on:swap="@post('/cmd/swap-containers', {payload: evt.detail})">
-            <sb-draggable-container id="drag-container-1">
+        {{block "containers" .}}
+        <div id="containers">
+            {{range .}}
+            <sb-draggable-container
+                id="{{.ID}}"
+                data-on:swap="@post('/cmd/swap-containers', {payload: evt.detail})"
+            >
                 <sb-draggable-trigger>Drag me</sb-draggable-trigger>
-                <div>Container 1</div>
+                <div>{{.Label}}</div>
             </sb-draggable-container>
-            <sb-draggable-container id="drag-container-2">
-                <sb-draggable-trigger>Drag me</sb-draggable-trigger>
-                <div>Container 2</div>
-            </sb-draggable-container>
-            <sb-draggable-container id="drag-container-3">
-                <sb-draggable-trigger>Drag me</sb-draggable-trigger>
-                <div>Container 3</div>
-            </sb-draggable-container>
+            {{end}}
         </div>
+        {{end}}
     </body>
 </html>
