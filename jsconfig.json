@@ -7,8 +7,8 @@
     "strict": false,
     "baseUrl": ".",
     "paths": {
-      "datastar": ["./vendor/datastar-rocket.d.ts"]
+      "datastar": ["./static/vendor/datastar-rocket.d.ts"]
     }
   },
-  "include": ["**/*.js", "vendor/**/*.d.ts"]
+  "include": ["**/*.js", "static/vendor/**/*.d.ts"]
 }

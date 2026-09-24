@@ -24,12 +24,6 @@ type Store struct {
 	containers []Container
 }
 
-func (s *Store) Snapshot() []Container {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return slices.Clone(s.containers)
-}
-
 func (s *Store) Swap(id, target string) ([]Container, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -45,13 +39,6 @@ func (s *Store) Swap(id, target string) ([]Container, error) {
 type Server struct {
 	store *Store
 	tmpl  *template.Template
-}
-
-func (srv *Server) handleDraggablePage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := srv.tmpl.ExecuteTemplate(w, "draggable.html", srv.store.Snapshot()); err != nil {
-		log.Printf("render page: %v", err)
-	}
 }
 
 type SwapSignals struct {
@@ -85,9 +72,8 @@ func (srv *Server) handleSwapContainers(w http.ResponseWriter, r *http.Request) 
 
 func main() {
 	addr := flag.String("addr", ":8080", "listen address")
-	root := flag.String("root", "..", "directory containing draggable/ and vendor/")
+	root := flag.String("root", "static", "directory to serve")
 	flag.Parse()
-	static := http.FileServer(http.Dir(*root))
 
 	srv := &Server{
 		store: &Store{containers: []Container{
@@ -95,18 +81,12 @@ func main() {
 			{ID: "drag-container-2", Label: "Container 2"},
 			{ID: "drag-container-3", Label: "Container 3"},
 		}},
-		tmpl: template.Must(template.ParseFiles(filepath.Join(*root, "draggable", "draggable.html"))),
+		tmpl: template.Must(template.ParseFiles(filepath.Join(*root, "components", "draggable", "draggable.html"))),
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/draggable/", http.StatusFound)
-	})
-	mux.HandleFunc("GET /draggable/{$}", srv.handleDraggablePage)
-	mux.HandleFunc("GET /draggable/draggable.html", srv.handleDraggablePage)
 	mux.HandleFunc("POST /cmd/swap-containers", srv.handleSwapContainers)
-	mux.Handle("GET /draggable/", static)
-	mux.Handle("GET /vendor/", static)
+	mux.Handle("GET /", http.FileServer(http.Dir(*root)))
 
 	log.Printf("listening on http://localhost%s", *addr)
 	log.Fatal(http.ListenAndServe(*addr, mux))

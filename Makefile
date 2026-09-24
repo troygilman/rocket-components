@@ -1,2 +1,2 @@
 run:
-	cd server && go run . -root ..
+	go run .
