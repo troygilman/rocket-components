@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
     <head>
+        <meta charset="utf-8" />
         <script type="importmap">
             {
                 "imports": {
@@ -10,15 +11,43 @@
         </script>
         <script type="module" src="./drawer.js"></script>
     </head>
-    <body>
+    <body data-signals:side="'left'">
         <style>
+            body {
+                margin: 0;
+            }
+            sb-drawer-container {
+                height: 100dvh;
+            }
+            nav,
+            main {
+                box-sizing: border-box;
+                height: 100%;
+                padding: 1rem;
+                color: white;
+            }
+            nav {
+                background-color: #333;
+            }
+            main {
+                background-color: black;
+            }
         </style>
-        <div>
-            <sb-drawer-container>
-                <sb-drawer-content>
-                    Hello World
-                </sb-drawer-content>
-            </sb-drawer-container>
-        </div>
+        <sb-drawer-container open data-attr:side="$side">
+            <nav slot="drawer">
+                <sb-drawer-trigger action="close">✕ Close</sb-drawer-trigger>
+                <p>Hello World</p>
+            </nav>
+            <main>
+                <sb-drawer-trigger>☰ Toggle drawer</sb-drawer-trigger>
+                <p>
+                    Side:
+                    <button data-on:click="$side = 'left'">left</button>
+                    <button data-on:click="$side = 'right'">right</button>
+                    <button data-on:click="$side = 'top'">top</button>
+                    <button data-on:click="$side = 'bottom'">bottom</button>
+                </p>
+            </main>
+        </sb-drawer-container>
     </body>
 </html>
