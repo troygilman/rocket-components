@@ -8,7 +8,44 @@
                 }
             }
         </script>
-        <script type="module" src="./draggable.js"></script>
+        <script type="module">
+            import "./draggable.js";
+            import "/lib/datastar-patch.js";
+
+            let containers = [
+                { id: "drag-container-1", label: "Container 1" },
+                { id: "drag-container-2", label: "Container 2" },
+                { id: "drag-container-3", label: "Container 3" },
+            ];
+
+            const render = () => /* html */ `
+                <div id="containers">
+                    ${containers
+                        .map(
+                            ({ id, label }) => /* html */ `
+                                <sb-draggable-container
+                                    id="${id}"
+                                    data-on:swap="@run(swapContainers, evt.detail)"
+                                >
+                                    <sb-draggable-trigger>Drag me</sb-draggable-trigger>
+                                    <div>${label}</div>
+                                </sb-draggable-container>
+                            `,
+                        )
+                        .join("")}
+                </div>
+            `;
+
+            window.swapContainers = ({ patchElements }, { id, target }) => {
+                const i = containers.findIndex((c) => c.id === id);
+                const j = containers.findIndex((c) => c.id === target);
+                if (i < 0 || j < 0) return;
+                containers = containers
+                    .with(i, containers[j])
+                    .with(j, containers[i]);
+                patchElements(render(), { useViewTransition: true });
+            };
+        </script>
     </head>
     <body>
         <style>
@@ -28,18 +65,28 @@
                 animation-timing-function: ease;
             }
         </style>
-        {{block "containers" .}}
         <div id="containers">
-            {{range .}}
             <sb-draggable-container
-                id="{{.ID}}"
-                data-on:swap="@post('/cmd/swap-containers', {payload: evt.detail})"
+                id="drag-container-1"
+                data-on:swap="@run(swapContainers, evt.detail)"
             >
                 <sb-draggable-trigger>Drag me</sb-draggable-trigger>
-                <div>{{.Label}}</div>
+                <div>Container 1</div>
             </sb-draggable-container>
-            {{end}}
+            <sb-draggable-container
+                id="drag-container-2"
+                data-on:swap="@run(swapContainers, evt.detail)"
+            >
+                <sb-draggable-trigger>Drag me</sb-draggable-trigger>
+                <div>Container 2</div>
+            </sb-draggable-container>
+            <sb-draggable-container
+                id="drag-container-3"
+                data-on:swap="@run(swapContainers, evt.detail)"
+            >
+                <sb-draggable-trigger>Drag me</sb-draggable-trigger>
+                <div>Container 3</div>
+            </sb-draggable-container>
         </div>
-        {{end}}
     </body>
 </html>
